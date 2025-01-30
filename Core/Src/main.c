@@ -18,9 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "can.h"
-#include "tim.h"
 #include "gpio.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bsp_dwt.h"
@@ -158,11 +157,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CAN_Init();
-  MX_TIM1_Init();
-  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-DWT_Init(72);//4 3 2
+DWT_Init(72);
 Motor_Object_Init(&Motor);
 pidv_Init(&pidv);
 pida_Init(&pida);
@@ -186,7 +182,7 @@ pida_Init(&pida);
 		//Motor_Update(&Motor, dt);
 		HAL_Delay(1);
     /* USER CODE END WHILE */
-		
+
     /* USER CODE BEGIN 3 */
   }
 	

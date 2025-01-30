@@ -20,10 +20,7 @@ pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_
 pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
-pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h
 pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
 pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
-pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
-pid_test\stm32f1xx_hal_dma.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h

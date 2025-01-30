@@ -56,7 +56,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 float mode;
-float type;
+float type =2;
 typedef struct PID
 {   
 	  float i;
@@ -80,19 +80,19 @@ void pidv_Init(pid_t *pid){
 	pid -> Kd=1.0;
 	pid -> setpoint=10.00;
 	pid -> err=0;
-	pid -> last_err=0;	
+	pid -> last_err=pid -> setpoint;	
 	pid -> last_last_err=0.00;
 	pid -> output =0;
 }
 void pida_Init(pid_t *pid){
 	pid -> i=0;
 	pid -> d=0;
-	pid -> Kp=1.75;
-	pid -> Ki=0.00;
-	pid -> Kd=2.00;
-	pid -> setpoint=2*3.1415926535897;
+	pid -> Kp=3.00;
+	pid -> Ki=2.00;
+	pid -> Kd=1.00;
+	pid -> setpoint=10;
 	pid -> err=0;
-	pid -> last_err=0.00;	
+	pid -> last_err=pid -> setpoint;	
 	pid -> last_last_err=0.00;
 	pid -> output =0;
 }

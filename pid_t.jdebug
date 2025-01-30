@@ -4,8 +4,8 @@
 *                         www.segger.com                             *
 **********************************************************************
 
-File          : C:/Users/Lenovo/Desktop/202/test.jdebug
-Created       : 11 Jan 2025 22:09
+File          : C:/Users/Lenovo/Desktop/pid_t.jdebug
+Created       : 25 Jan 2025 22:44
 Ozone Version : V3.24
 */
 
@@ -22,20 +22,18 @@ void OnProjectLoad (void) {
   //
   // Dialog-generated settings
   //
-  Project.AddPathSubstitute ("C:/Users/Lenovo/Desktop/202", "$(ProjectDir)");
-  Project.AddPathSubstitute ("c:/users/lenovo/desktop/202", "$(ProjectDir)");
+  Project.AddPathSubstitute ("C:/Users/Lenovo/Desktop", "$(ProjectDir)");
+  Project.AddPathSubstitute ("c:/users/lenovo/desktop", "$(ProjectDir)");
   Project.SetDevice ("STM32F103RC");
-  Project.SetHostIF ("USB", "20723874");
+  Project.SetHostIF ("USB", "20725079");
   Project.SetTargetIF ("SWD");
   Project.SetTIFSpeed ("4 MHz");
   Project.AddSvdFile ("$(InstallDir)/Config/CPU/Cortex-M3.svd");
-  Project.AddSvdFile ("$(InstallDir)/Config/Peripherals/STM32F103xx.svd");
   //
   // User settings
   //
-  File.Open ("$(ProjectDir)/build/202.elf");
-  Edit.SysVar (VAR_HSS_SPEED, FREQ_10_KHZ);
-  Edit.SysVar (VAR_POWER_SAMPLING_SPEED, FREQ_5_KHZ);
+  Edit.SysVar (VAR_HSS_SPEED, 1000000);
+  File.Open ("$(ProjectDir)/pid_test/MDK-ARM/pid_test/pid_test.axf");
 }
 
 /*********************************************************************

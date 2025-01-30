@@ -1,0 +1,31 @@
+
+GraphedExpression="input", Color=#a00909
+GraphedExpression="Motor.MeasureVelocity", Color=#09a01b
+GraphedExpression="0", Color=#09a087
+GraphedExpression="dt", Color=#0984a0
+GraphedExpression="Motor.MeasureAngle", Color=#0964a0
+GraphedExpression="pida.setpoint", Color=#094fa0
+OpenDocument="stm32f1xx_hal.c", FilePath="C:/Users/Lenovo/Desktop/pid_test/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c", Line=367
+OpenDocument="main.c", FilePath="C:/Users/Lenovo/Desktop/pid_test/Core/Src/main.c", Line=125
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=440, h=1073, TabPos=0, TopOfStack=0, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=591, h=251, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=1293, h=329, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x18
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=440, h=1073, TabPos=1, TopOfStack=1, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=RIGHT, x=0, y=2, w=591, h=320, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Timeline", DockArea=RIGHT, x=0, y=1, w=591, h=519, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=1, DataPaneShown=1, PowerPaneShown=1, CodePaneShown=1, PinCursor="Cursor Movable", TimePerDiv="5 s / Div", TimeStampFormat="Time", DataGraphDrawAsPoints=0, DataGraphLegendShown=1, DataGraphUniformSampleSpacing=0, DataGraphLegendPosition="0;0", PowerGraphDrawAsPoints=0, PowerGraphLegendShown=1, PowerGraphAvgFilterTime=Off, PowerGraphAvgFilterLen=Off, PowerGraphUniformSampleSpacing=0, PowerGraphLegendPosition="216;-69", CodeGraphLegendShown=1, CodeGraphLegendPosition="0;0"
+OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1266, h=329, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[100;100;100;140]
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[215;100;100;100;758]
+TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";" input";" Motor.MeasureVelocity";" 0";" dt";" Motor.MeasureAngle";" pida.setpoint"], ColWidths=[100;100;100;100;100;100;100;100]
+TableHeader="Data Sampling Setup", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[118;194;144;124;144;144;110;164;134]
+TableHeader="Power Sampling", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
+TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
+TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[26;26;26;26]
+WatchedExpression="Motor.U", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="input", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="Motor.MeasureVelocity", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="dt", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="Motor.MeasureAngle", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="pida.setpoint", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="type", RefreshRate=5, Window=Watched Data 1

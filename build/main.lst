@@ -1,0 +1,1222 @@
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"main.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Core/Src/main.c"
+  18              		.section	.text.PID_Init,"ax",%progbits
+  19              		.align	1
+  20              		.global	PID_Init
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	PID_Init:
+  26              	.LVL0:
+  27              	.LFB65:
+   1:Core/Src/main.c **** /* USER CODE BEGIN Header */
+   2:Core/Src/main.c **** /**
+   3:Core/Src/main.c ****   ******************************************************************************
+   4:Core/Src/main.c ****   * @file           : main.c
+   5:Core/Src/main.c ****   * @brief          : Main program body
+   6:Core/Src/main.c ****   ******************************************************************************
+   7:Core/Src/main.c ****   * @attention
+   8:Core/Src/main.c ****   *
+   9:Core/Src/main.c ****   * Copyright (c) 2025 STMicroelectronics.
+  10:Core/Src/main.c ****   * All rights reserved.
+  11:Core/Src/main.c ****   *
+  12:Core/Src/main.c ****   * This software is licensed under terms that can be found in the LICENSE file
+  13:Core/Src/main.c ****   * in the root directory of this software component.
+  14:Core/Src/main.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:Core/Src/main.c ****   *
+  16:Core/Src/main.c ****   ******************************************************************************
+  17:Core/Src/main.c ****   */
+  18:Core/Src/main.c **** /* USER CODE END Header */
+  19:Core/Src/main.c **** /* Includes ------------------------------------------------------------------*/
+  20:Core/Src/main.c **** #include "main.h"
+  21:Core/Src/main.c **** #include "adc.h"
+  22:Core/Src/main.c **** #include "can.h"
+  23:Core/Src/main.c **** #include "tim.h"
+  24:Core/Src/main.c **** #include "gpio.h"
+  25:Core/Src/main.c **** 
+  26:Core/Src/main.c **** /* Private includes ----------------------------------------------------------*/
+  27:Core/Src/main.c **** /* USER CODE BEGIN Includes */
+  28:Core/Src/main.c **** #include "math.h"
+  29:Core/Src/main.c **** /* USER CODE END Includes */
+  30:Core/Src/main.c **** 
+  31:Core/Src/main.c **** /* Private typedef -----------------------------------------------------------*/
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 2
+
+
+  32:Core/Src/main.c **** /* USER CODE BEGIN PTD */
+  33:Core/Src/main.c **** 
+  34:Core/Src/main.c **** /* USER CODE END PTD */
+  35:Core/Src/main.c **** 
+  36:Core/Src/main.c **** /* Private define ------------------------------------------------------------*/
+  37:Core/Src/main.c **** /* USER CODE BEGIN PD */
+  38:Core/Src/main.c **** 
+  39:Core/Src/main.c **** /* USER CODE END PD */
+  40:Core/Src/main.c **** 
+  41:Core/Src/main.c **** /* Private macro -------------------------------------------------------------*/
+  42:Core/Src/main.c **** /* USER CODE BEGIN PM */
+  43:Core/Src/main.c **** 
+  44:Core/Src/main.c **** /* USER CODE END PM */
+  45:Core/Src/main.c **** 
+  46:Core/Src/main.c **** /* Private variables ---------------------------------------------------------*/
+  47:Core/Src/main.c **** 
+  48:Core/Src/main.c **** /* USER CODE BEGIN PV */
+  49:Core/Src/main.c **** 
+  50:Core/Src/main.c **** /* USER CODE END PV */
+  51:Core/Src/main.c **** 
+  52:Core/Src/main.c **** /* Private function prototypes -----------------------------------------------*/
+  53:Core/Src/main.c **** void SystemClock_Config(void);
+  54:Core/Src/main.c **** /* USER CODE BEGIN PFP */
+  55:Core/Src/main.c **** 
+  56:Core/Src/main.c **** /* USER CODE END PFP */
+  57:Core/Src/main.c **** 
+  58:Core/Src/main.c **** /* Private user code ---------------------------------------------------------*/
+  59:Core/Src/main.c **** /* USER CODE BEGIN 0 */
+  60:Core/Src/main.c **** typedef struct {
+  61:Core/Src/main.c ****     float Kp;
+  62:Core/Src/main.c ****     float Ki;
+  63:Core/Src/main.c ****     float Kd;
+  64:Core/Src/main.c ****     float dt;  // Sample time in seconds
+  65:Core/Src/main.c ****     
+  66:Core/Src/main.c ****     float integral;
+  67:Core/Src/main.c ****     float prev_error;
+  68:Core/Src/main.c ****     float output;
+  69:Core/Src/main.c ****     
+  70:Core/Src/main.c ****     float max_output;  // Output limiting
+  71:Core/Src/main.c ****     float min_output;
+  72:Core/Src/main.c ****     
+  73:Core/Src/main.c ****     float setpoint;
+  74:Core/Src/main.c **** } PID_TypeDef;
+  75:Core/Src/main.c **** PID_TypeDef pid;
+  76:Core/Src/main.c **** uint16_t adc_value;
+  77:Core/Src/main.c **** float measured_value;
+  78:Core/Src/main.c **** 
+  79:Core/Src/main.c **** /* PID Initialize function */
+  80:Core/Src/main.c **** void PID_Init(PID_TypeDef *pid) {
+  28              		.loc 1 80 33 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  81:Core/Src/main.c ****     pid->Kp = 1.0f;          // Adjust these values
+  33              		.loc 1 81 5 view .LVU1
+  34              		.loc 1 81 13 is_stmt 0 view .LVU2
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 3
+
+
+  35 0000 4FF07E53 		mov	r3, #1065353216
+  36 0004 0360     		str	r3, [r0]	@ float
+  82:Core/Src/main.c ****     pid->Ki = 0.1f;          // based on your system
+  37              		.loc 1 82 5 is_stmt 1 view .LVU3
+  38              		.loc 1 82 13 is_stmt 0 view .LVU4
+  39 0006 074B     		ldr	r3, .L2
+  40 0008 4360     		str	r3, [r0, #4]	@ float
+  83:Core/Src/main.c ****     pid->Kd = 0.05f;         // requirements
+  41              		.loc 1 83 5 is_stmt 1 view .LVU5
+  42              		.loc 1 83 13 is_stmt 0 view .LVU6
+  43 000a 074B     		ldr	r3, .L2+4
+  44 000c 8360     		str	r3, [r0, #8]	@ float
+  84:Core/Src/main.c ****     
+  85:Core/Src/main.c ****     pid->dt = 0.001f;        // 1ms sampling time
+  45              		.loc 1 85 5 is_stmt 1 view .LVU7
+  46              		.loc 1 85 13 is_stmt 0 view .LVU8
+  47 000e 074B     		ldr	r3, .L2+8
+  48 0010 C360     		str	r3, [r0, #12]	@ float
+  86:Core/Src/main.c ****     pid->integral = 0.0f;
+  49              		.loc 1 86 5 is_stmt 1 view .LVU9
+  50              		.loc 1 86 19 is_stmt 0 view .LVU10
+  51 0012 0023     		movs	r3, #0
+  52 0014 0361     		str	r3, [r0, #16]	@ float
+  87:Core/Src/main.c ****     pid->prev_error = 0.0f;
+  53              		.loc 1 87 5 is_stmt 1 view .LVU11
+  54              		.loc 1 87 21 is_stmt 0 view .LVU12
+  55 0016 4361     		str	r3, [r0, #20]	@ float
+  88:Core/Src/main.c ****     pid->output = 0.0f;
+  56              		.loc 1 88 5 is_stmt 1 view .LVU13
+  57              		.loc 1 88 17 is_stmt 0 view .LVU14
+  58 0018 8361     		str	r3, [r0, #24]	@ float
+  89:Core/Src/main.c ****     
+  90:Core/Src/main.c ****     pid->max_output = 1000.0f;  // PWM max value
+  59              		.loc 1 90 5 is_stmt 1 view .LVU15
+  60              		.loc 1 90 21 is_stmt 0 view .LVU16
+  61 001a 054A     		ldr	r2, .L2+12
+  62 001c C261     		str	r2, [r0, #28]	@ float
+  91:Core/Src/main.c ****     pid->min_output = 0.0f;     // PWM min value
+  63              		.loc 1 91 5 is_stmt 1 view .LVU17
+  64              		.loc 1 91 21 is_stmt 0 view .LVU18
+  65 001e 0362     		str	r3, [r0, #32]	@ float
+  92:Core/Src/main.c ****     
+  93:Core/Src/main.c ****     pid->setpoint = 0.0f;
+  66              		.loc 1 93 5 is_stmt 1 view .LVU19
+  67              		.loc 1 93 19 is_stmt 0 view .LVU20
+  68 0020 4362     		str	r3, [r0, #36]	@ float
+  94:Core/Src/main.c **** }
+  69              		.loc 1 94 1 view .LVU21
+  70 0022 7047     		bx	lr
+  71              	.L3:
+  72              		.align	2
+  73              	.L2:
+  74 0024 CDCCCC3D 		.word	1036831949
+  75 0028 CDCC4C3D 		.word	1028443341
+  76 002c 6F12833A 		.word	981668463
+  77 0030 00007A44 		.word	1148846080
+  78              		.cfi_endproc
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 4
+
+
+  79              	.LFE65:
+  81              		.global	__aeabi_fsub
+  82              		.global	__aeabi_fmul
+  83              		.global	__aeabi_fadd
+  84              		.global	__aeabi_fdiv
+  85              		.global	__aeabi_fcmpgt
+  86              		.global	__aeabi_fcmplt
+  87              		.section	.text.PID_Calculate,"ax",%progbits
+  88              		.align	1
+  89              		.global	PID_Calculate
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  94              	PID_Calculate:
+  95              	.LVL1:
+  96              	.LFB66:
+  95:Core/Src/main.c **** float PID_Calculate(PID_TypeDef *pid, float measured_value) {
+  97              		.loc 1 95 61 is_stmt 1 view -0
+  98              		.cfi_startproc
+  99              		@ args = 0, pretend = 0, frame = 0
+ 100              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101              		.loc 1 95 61 is_stmt 0 view .LVU23
+ 102 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 103              	.LCFI0:
+ 104              		.cfi_def_cfa_offset 24
+ 105              		.cfi_offset 4, -24
+ 106              		.cfi_offset 5, -20
+ 107              		.cfi_offset 6, -16
+ 108              		.cfi_offset 7, -12
+ 109              		.cfi_offset 8, -8
+ 110              		.cfi_offset 14, -4
+ 111 0004 0446     		mov	r4, r0
+  96:Core/Src/main.c ****     float error = pid->setpoint - measured_value;
+ 112              		.loc 1 96 5 is_stmt 1 view .LVU24
+ 113              		.loc 1 96 11 is_stmt 0 view .LVU25
+ 114 0006 406A     		ldr	r0, [r0, #36]	@ float
+ 115              	.LVL2:
+ 116              		.loc 1 96 11 view .LVU26
+ 117 0008 FFF7FEFF 		bl	__aeabi_fsub
+ 118              	.LVL3:
+ 119              		.loc 1 96 11 view .LVU27
+ 120 000c 0546     		mov	r5, r0
+ 121              	.LVL4:
+  97:Core/Src/main.c ****     
+  98:Core/Src/main.c ****     // Proportional term
+  99:Core/Src/main.c ****     float p_term = pid->Kp * error;
+ 122              		.loc 1 99 5 is_stmt 1 view .LVU28
+ 123              		.loc 1 99 11 is_stmt 0 view .LVU29
+ 124 000e 0146     		mov	r1, r0
+ 125 0010 2068     		ldr	r0, [r4]	@ float
+ 126              	.LVL5:
+ 127              		.loc 1 99 11 view .LVU30
+ 128 0012 FFF7FEFF 		bl	__aeabi_fmul
+ 129              	.LVL6:
+ 130              		.loc 1 99 11 view .LVU31
+ 131 0016 0746     		mov	r7, r0
+ 132              	.LVL7:
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 5
+
+
+ 100:Core/Src/main.c ****     
+ 101:Core/Src/main.c ****     // Integral term with anti-windup
+ 102:Core/Src/main.c ****     pid->integral += error * pid->dt;
+ 133              		.loc 1 102 5 is_stmt 1 view .LVU32
+ 134              		.loc 1 102 8 is_stmt 0 view .LVU33
+ 135 0018 D4F81080 		ldr	r8, [r4, #16]	@ float
+ 136              		.loc 1 102 33 view .LVU34
+ 137 001c E668     		ldr	r6, [r4, #12]	@ float
+ 138              		.loc 1 102 28 view .LVU35
+ 139 001e 2946     		mov	r1, r5
+ 140 0020 3046     		mov	r0, r6
+ 141              	.LVL8:
+ 142              		.loc 1 102 28 view .LVU36
+ 143 0022 FFF7FEFF 		bl	__aeabi_fmul
+ 144              	.LVL9:
+ 145 0026 0146     		mov	r1, r0
+ 146              		.loc 1 102 19 view .LVU37
+ 147 0028 4046     		mov	r0, r8
+ 148 002a FFF7FEFF 		bl	__aeabi_fadd
+ 149              	.LVL10:
+ 150 002e 2061     		str	r0, [r4, #16]	@ float
+ 103:Core/Src/main.c ****     float i_term = pid->Ki * pid->integral;
+ 151              		.loc 1 103 5 is_stmt 1 view .LVU38
+ 152              		.loc 1 103 11 is_stmt 0 view .LVU39
+ 153 0030 6168     		ldr	r1, [r4, #4]	@ float
+ 154 0032 FFF7FEFF 		bl	__aeabi_fmul
+ 155              	.LVL11:
+ 156 0036 8046     		mov	r8, r0
+ 157              	.LVL12:
+ 104:Core/Src/main.c ****     
+ 105:Core/Src/main.c ****     // Derivative term
+ 106:Core/Src/main.c ****     float derivative = (error - pid->prev_error) / pid->dt;
+ 158              		.loc 1 106 5 is_stmt 1 view .LVU40
+ 159              		.loc 1 106 31 is_stmt 0 view .LVU41
+ 160 0038 6169     		ldr	r1, [r4, #20]	@ float
+ 161 003a 2846     		mov	r0, r5
+ 162              	.LVL13:
+ 163              		.loc 1 106 31 view .LVU42
+ 164 003c FFF7FEFF 		bl	__aeabi_fsub
+ 165              	.LVL14:
+ 166              		.loc 1 106 11 view .LVU43
+ 167 0040 3146     		mov	r1, r6
+ 168 0042 FFF7FEFF 		bl	__aeabi_fdiv
+ 169              	.LVL15:
+ 170 0046 0146     		mov	r1, r0
+ 171              	.LVL16:
+ 107:Core/Src/main.c ****     float d_term = pid->Kd * derivative;
+ 172              		.loc 1 107 5 is_stmt 1 view .LVU44
+ 173              		.loc 1 107 11 is_stmt 0 view .LVU45
+ 174 0048 A068     		ldr	r0, [r4, #8]	@ float
+ 175              	.LVL17:
+ 176              		.loc 1 107 11 view .LVU46
+ 177 004a FFF7FEFF 		bl	__aeabi_fmul
+ 178              	.LVL18:
+ 179              		.loc 1 107 11 view .LVU47
+ 180 004e 0646     		mov	r6, r0
+ 181              	.LVL19:
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 6
+
+
+ 108:Core/Src/main.c ****     
+ 109:Core/Src/main.c ****     // Calculate total output
+ 110:Core/Src/main.c ****     pid->output = p_term + i_term + d_term;
+ 182              		.loc 1 110 5 is_stmt 1 view .LVU48
+ 183              		.loc 1 110 26 is_stmt 0 view .LVU49
+ 184 0050 4146     		mov	r1, r8
+ 185 0052 3846     		mov	r0, r7
+ 186              	.LVL20:
+ 187              		.loc 1 110 26 view .LVU50
+ 188 0054 FFF7FEFF 		bl	__aeabi_fadd
+ 189              	.LVL21:
+ 190              		.loc 1 110 35 view .LVU51
+ 191 0058 3146     		mov	r1, r6
+ 192 005a FFF7FEFF 		bl	__aeabi_fadd
+ 193              	.LVL22:
+ 194 005e 0646     		mov	r6, r0
+ 195              	.LVL23:
+ 196              		.loc 1 110 17 view .LVU52
+ 197 0060 A061     		str	r0, [r4, #24]	@ float
+ 111:Core/Src/main.c ****     
+ 112:Core/Src/main.c ****     // Output limiting
+ 113:Core/Src/main.c ****     if (pid->output > pid->max_output)
+ 198              		.loc 1 113 5 is_stmt 1 view .LVU53
+ 199              		.loc 1 113 26 is_stmt 0 view .LVU54
+ 200 0062 E769     		ldr	r7, [r4, #28]	@ float
+ 201              	.LVL24:
+ 202              		.loc 1 113 8 view .LVU55
+ 203 0064 3946     		mov	r1, r7
+ 204 0066 FFF7FEFF 		bl	__aeabi_fcmpgt
+ 205              	.LVL25:
+ 206 006a 20B1     		cbz	r0, .L11
+ 114:Core/Src/main.c ****         pid->output = pid->max_output;
+ 207              		.loc 1 114 9 is_stmt 1 view .LVU56
+ 208              		.loc 1 114 21 is_stmt 0 view .LVU57
+ 209 006c A761     		str	r7, [r4, #24]	@ float
+ 210              	.L7:
+ 115:Core/Src/main.c ****     else if (pid->output < pid->min_output)
+ 116:Core/Src/main.c ****         pid->output = pid->min_output;
+ 117:Core/Src/main.c ****     
+ 118:Core/Src/main.c ****     // Store error for next iteration
+ 119:Core/Src/main.c ****     pid->prev_error = error;
+ 211              		.loc 1 119 5 is_stmt 1 view .LVU58
+ 212              		.loc 1 119 21 is_stmt 0 view .LVU59
+ 213 006e 6561     		str	r5, [r4, #20]	@ float
+ 120:Core/Src/main.c ****     
+ 121:Core/Src/main.c ****     return pid->output;
+ 214              		.loc 1 121 5 is_stmt 1 view .LVU60
+ 122:Core/Src/main.c **** }
+ 215              		.loc 1 122 1 is_stmt 0 view .LVU61
+ 216 0070 A069     		ldr	r0, [r4, #24]	@ float
+ 217 0072 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 218              	.LVL26:
+ 219              	.L11:
+ 115:Core/Src/main.c ****     else if (pid->output < pid->min_output)
+ 220              		.loc 1 115 10 is_stmt 1 view .LVU62
+ 115:Core/Src/main.c ****     else if (pid->output < pid->min_output)
+ 221              		.loc 1 115 31 is_stmt 0 view .LVU63
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 7
+
+
+ 222 0076 276A     		ldr	r7, [r4, #32]	@ float
+ 115:Core/Src/main.c ****     else if (pid->output < pid->min_output)
+ 223              		.loc 1 115 13 view .LVU64
+ 224 0078 3946     		mov	r1, r7
+ 225 007a 3046     		mov	r0, r6
+ 226 007c FFF7FEFF 		bl	__aeabi_fcmplt
+ 227              	.LVL27:
+ 228 0080 0028     		cmp	r0, #0
+ 229 0082 F4D0     		beq	.L7
+ 116:Core/Src/main.c ****     
+ 230              		.loc 1 116 9 is_stmt 1 view .LVU65
+ 116:Core/Src/main.c ****     
+ 231              		.loc 1 116 21 is_stmt 0 view .LVU66
+ 232 0084 A761     		str	r7, [r4, #24]	@ float
+ 233 0086 F2E7     		b	.L7
+ 234              		.cfi_endproc
+ 235              	.LFE66:
+ 237              		.global	__aeabi_ui2f
+ 238              		.global	__aeabi_f2uiz
+ 239              		.section	.text.HAL_TIM_PeriodElapsedCallback,"ax",%progbits
+ 240              		.align	1
+ 241              		.global	HAL_TIM_PeriodElapsedCallback
+ 242              		.syntax unified
+ 243              		.thumb
+ 244              		.thumb_func
+ 246              	HAL_TIM_PeriodElapsedCallback:
+ 247              	.LVL28:
+ 248              	.LFB67:
+ 123:Core/Src/main.c **** void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+ 249              		.loc 1 123 61 is_stmt 1 view -0
+ 250              		.cfi_startproc
+ 251              		@ args = 0, pretend = 0, frame = 0
+ 252              		@ frame_needed = 0, uses_anonymous_args = 0
+ 124:Core/Src/main.c ****     if (htim->Instance == TIM2) {  // Timer for PID control
+ 253              		.loc 1 124 5 view .LVU68
+ 254              		.loc 1 124 13 is_stmt 0 view .LVU69
+ 255 0000 0368     		ldr	r3, [r0]
+ 256              		.loc 1 124 8 view .LVU70
+ 257 0002 B3F1804F 		cmp	r3, #1073741824
+ 258 0006 00D0     		beq	.L19
+ 259 0008 7047     		bx	lr
+ 260              	.L19:
+ 123:Core/Src/main.c **** void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+ 261              		.loc 1 123 61 view .LVU71
+ 262 000a 10B5     		push	{r4, lr}
+ 263              	.LCFI1:
+ 264              		.cfi_def_cfa_offset 8
+ 265              		.cfi_offset 4, -8
+ 266              		.cfi_offset 14, -4
+ 267              	.LBB4:
+ 125:Core/Src/main.c ****         // Read ADC value and convert to actual units
+ 126:Core/Src/main.c ****         measured_value = (float)adc_value * (3.3f / 4096.0f);  // For 12-bit ADC
+ 268              		.loc 1 126 9 is_stmt 1 view .LVU72
+ 269              		.loc 1 126 26 is_stmt 0 view .LVU73
+ 270 000c 094B     		ldr	r3, .L20
+ 271 000e 1888     		ldrh	r0, [r3]
+ 272              	.LVL29:
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 8
+
+
+ 273              		.loc 1 126 26 view .LVU74
+ 274 0010 FFF7FEFF 		bl	__aeabi_ui2f
+ 275              	.LVL30:
+ 276              		.loc 1 126 43 view .LVU75
+ 277 0014 0849     		ldr	r1, .L20+4
+ 278 0016 FFF7FEFF 		bl	__aeabi_fmul
+ 279              	.LVL31:
+ 280 001a 0146     		mov	r1, r0
+ 281              		.loc 1 126 24 view .LVU76
+ 282 001c 074B     		ldr	r3, .L20+8
+ 283 001e 1860     		str	r0, [r3]	@ float
+ 127:Core/Src/main.c ****         
+ 128:Core/Src/main.c ****         // Calculate PID output
+ 129:Core/Src/main.c ****         float output = PID_Calculate(&pid, measured_value);
+ 284              		.loc 1 129 9 is_stmt 1 view .LVU77
+ 285              		.loc 1 129 24 is_stmt 0 view .LVU78
+ 286 0020 0748     		ldr	r0, .L20+12
+ 287 0022 FFF7FEFF 		bl	PID_Calculate
+ 288              	.LVL32:
+ 130:Core/Src/main.c ****         
+ 131:Core/Src/main.c ****         // Update PWM value
+ 132:Core/Src/main.c ****         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, (uint32_t)output);
+ 289              		.loc 1 132 9 is_stmt 1 view .LVU79
+ 290 0026 074B     		ldr	r3, .L20+16
+ 291 0028 1C68     		ldr	r4, [r3]
+ 292 002a FFF7FEFF 		bl	__aeabi_f2uiz
+ 293              	.LVL33:
+ 294              		.loc 1 132 9 is_stmt 0 view .LVU80
+ 295 002e 6063     		str	r0, [r4, #52]
+ 296              	.LBE4:
+ 133:Core/Src/main.c ****     }
+ 134:Core/Src/main.c **** }
+ 297              		.loc 1 134 1 view .LVU81
+ 298 0030 10BD     		pop	{r4, pc}
+ 299              	.L21:
+ 300 0032 00BF     		.align	2
+ 301              	.L20:
+ 302 0034 00000000 		.word	adc_value
+ 303 0038 3333533A 		.word	978531123
+ 304 003c 00000000 		.word	measured_value
+ 305 0040 00000000 		.word	pid
+ 306 0044 00000000 		.word	htim3
+ 307              		.cfi_endproc
+ 308              	.LFE67:
+ 310              		.section	.text.HAL_ADC_ConvCpltCallback,"ax",%progbits
+ 311              		.align	1
+ 312              		.global	HAL_ADC_ConvCpltCallback
+ 313              		.syntax unified
+ 314              		.thumb
+ 315              		.thumb_func
+ 317              	HAL_ADC_ConvCpltCallback:
+ 318              	.LVL34:
+ 319              	.LFB68:
+ 135:Core/Src/main.c **** 
+ 136:Core/Src/main.c **** void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+ 320              		.loc 1 136 56 is_stmt 1 view -0
+ 321              		.cfi_startproc
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 9
+
+
+ 322              		@ args = 0, pretend = 0, frame = 0
+ 323              		@ frame_needed = 0, uses_anonymous_args = 0
+ 324              		.loc 1 136 56 is_stmt 0 view .LVU83
+ 325 0000 08B5     		push	{r3, lr}
+ 326              	.LCFI2:
+ 327              		.cfi_def_cfa_offset 8
+ 328              		.cfi_offset 3, -8
+ 329              		.cfi_offset 14, -4
+ 137:Core/Src/main.c ****     if (hadc->Instance == ADC1) {
+ 330              		.loc 1 137 5 is_stmt 1 view .LVU84
+ 331              		.loc 1 137 13 is_stmt 0 view .LVU85
+ 332 0002 0268     		ldr	r2, [r0]
+ 333              		.loc 1 137 8 view .LVU86
+ 334 0004 044B     		ldr	r3, .L26
+ 335 0006 9A42     		cmp	r2, r3
+ 336 0008 00D0     		beq	.L25
+ 337              	.LVL35:
+ 338              	.L22:
+ 138:Core/Src/main.c ****         adc_value = HAL_ADC_GetValue(hadc);
+ 139:Core/Src/main.c ****     }
+ 140:Core/Src/main.c **** }
+ 339              		.loc 1 140 1 view .LVU87
+ 340 000a 08BD     		pop	{r3, pc}
+ 341              	.LVL36:
+ 342              	.L25:
+ 138:Core/Src/main.c ****         adc_value = HAL_ADC_GetValue(hadc);
+ 343              		.loc 1 138 9 is_stmt 1 view .LVU88
+ 138:Core/Src/main.c ****         adc_value = HAL_ADC_GetValue(hadc);
+ 344              		.loc 1 138 21 is_stmt 0 view .LVU89
+ 345 000c FFF7FEFF 		bl	HAL_ADC_GetValue
+ 346              	.LVL37:
+ 138:Core/Src/main.c ****         adc_value = HAL_ADC_GetValue(hadc);
+ 347              		.loc 1 138 19 view .LVU90
+ 348 0010 024B     		ldr	r3, .L26+4
+ 349 0012 1880     		strh	r0, [r3]	@ movhi
+ 350              		.loc 1 140 1 view .LVU91
+ 351 0014 F9E7     		b	.L22
+ 352              	.L27:
+ 353 0016 00BF     		.align	2
+ 354              	.L26:
+ 355 0018 00240140 		.word	1073816576
+ 356 001c 00000000 		.word	adc_value
+ 357              		.cfi_endproc
+ 358              	.LFE68:
+ 360              		.section	.text.Error_Handler,"ax",%progbits
+ 361              		.align	1
+ 362              		.global	Error_Handler
+ 363              		.syntax unified
+ 364              		.thumb
+ 365              		.thumb_func
+ 367              	Error_Handler:
+ 368              	.LFB71:
+ 141:Core/Src/main.c **** 
+ 142:Core/Src/main.c **** 
+ 143:Core/Src/main.c **** /* USER CODE END 0 */
+ 144:Core/Src/main.c **** 
+ 145:Core/Src/main.c **** /**
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 10
+
+
+ 146:Core/Src/main.c ****   * @brief  The application entry point.
+ 147:Core/Src/main.c ****   * @retval int
+ 148:Core/Src/main.c ****   */
+ 149:Core/Src/main.c **** int main(void)
+ 150:Core/Src/main.c **** {
+ 151:Core/Src/main.c **** 
+ 152:Core/Src/main.c ****   /* USER CODE BEGIN 1 */
+ 153:Core/Src/main.c **** PID_Init(&pid);
+ 154:Core/Src/main.c ****     HAL_TIM_Base_Start_IT(&htim3);
+ 155:Core/Src/main.c ****     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+ 156:Core/Src/main.c ****     HAL_ADC_Start_IT(&hadc1);
+ 157:Core/Src/main.c ****   /* USER CODE END 1 */
+ 158:Core/Src/main.c **** 
+ 159:Core/Src/main.c ****   /* MCU Configuration--------------------------------------------------------*/
+ 160:Core/Src/main.c **** 
+ 161:Core/Src/main.c ****   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+ 162:Core/Src/main.c ****   HAL_Init();
+ 163:Core/Src/main.c **** 
+ 164:Core/Src/main.c ****   /* USER CODE BEGIN Init */
+ 165:Core/Src/main.c **** 
+ 166:Core/Src/main.c ****   /* USER CODE END Init */
+ 167:Core/Src/main.c **** 
+ 168:Core/Src/main.c ****   /* Configure the system clock */
+ 169:Core/Src/main.c ****   SystemClock_Config();
+ 170:Core/Src/main.c **** 
+ 171:Core/Src/main.c ****   /* USER CODE BEGIN SysInit */
+ 172:Core/Src/main.c **** 
+ 173:Core/Src/main.c ****   /* USER CODE END SysInit */
+ 174:Core/Src/main.c **** 
+ 175:Core/Src/main.c ****   /* Initialize all configured peripherals */
+ 176:Core/Src/main.c ****   MX_GPIO_Init();
+ 177:Core/Src/main.c ****   MX_CAN_Init();
+ 178:Core/Src/main.c ****   MX_ADC1_Init();
+ 179:Core/Src/main.c ****   MX_TIM1_Init();
+ 180:Core/Src/main.c ****   MX_TIM3_Init();
+ 181:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 182:Core/Src/main.c **** 
+ 183:Core/Src/main.c ****   /* USER CODE END 2 */
+ 184:Core/Src/main.c **** 
+ 185:Core/Src/main.c ****   /* Infinite loop */
+ 186:Core/Src/main.c ****   /* USER CODE BEGIN WHILE */
+ 187:Core/Src/main.c ****   while (1)
+ 188:Core/Src/main.c ****   {
+ 189:Core/Src/main.c ****     HAL_Delay(1000);
+ 190:Core/Src/main.c ****     /* USER CODE END WHILE */
+ 191:Core/Src/main.c **** 
+ 192:Core/Src/main.c ****     /* USER CODE BEGIN 3 */
+ 193:Core/Src/main.c ****   }
+ 194:Core/Src/main.c ****   /* USER CODE END 3 */
+ 195:Core/Src/main.c **** }
+ 196:Core/Src/main.c **** 
+ 197:Core/Src/main.c **** /**
+ 198:Core/Src/main.c ****   * @brief System Clock Configuration
+ 199:Core/Src/main.c ****   * @retval None
+ 200:Core/Src/main.c ****   */
+ 201:Core/Src/main.c **** void SystemClock_Config(void)
+ 202:Core/Src/main.c **** {
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 11
+
+
+ 203:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 204:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 205:Core/Src/main.c ****   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+ 206:Core/Src/main.c **** 
+ 207:Core/Src/main.c ****   /** Initializes the RCC Oscillators according to the specified parameters
+ 208:Core/Src/main.c ****   * in the RCC_OscInitTypeDef structure.
+ 209:Core/Src/main.c ****   */
+ 210:Core/Src/main.c ****   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+ 211:Core/Src/main.c ****   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ 212:Core/Src/main.c ****   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+ 213:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 214:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 215:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 216:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+ 217:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 218:Core/Src/main.c ****   {
+ 219:Core/Src/main.c ****     Error_Handler();
+ 220:Core/Src/main.c ****   }
+ 221:Core/Src/main.c **** 
+ 222:Core/Src/main.c ****   /** Initializes the CPU, AHB and APB buses clocks
+ 223:Core/Src/main.c ****   */
+ 224:Core/Src/main.c ****   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+ 225:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 226:Core/Src/main.c ****   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+ 227:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 228:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 229:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 230:Core/Src/main.c **** 
+ 231:Core/Src/main.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+ 232:Core/Src/main.c ****   {
+ 233:Core/Src/main.c ****     Error_Handler();
+ 234:Core/Src/main.c ****   }
+ 235:Core/Src/main.c ****   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+ 236:Core/Src/main.c ****   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+ 237:Core/Src/main.c ****   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+ 238:Core/Src/main.c ****   {
+ 239:Core/Src/main.c ****     Error_Handler();
+ 240:Core/Src/main.c ****   }
+ 241:Core/Src/main.c **** }
+ 242:Core/Src/main.c **** 
+ 243:Core/Src/main.c **** /* USER CODE BEGIN 4 */
+ 244:Core/Src/main.c **** 
+ 245:Core/Src/main.c **** /* USER CODE END 4 */
+ 246:Core/Src/main.c **** 
+ 247:Core/Src/main.c **** /**
+ 248:Core/Src/main.c ****   * @brief  This function is executed in case of error occurrence.
+ 249:Core/Src/main.c ****   * @retval None
+ 250:Core/Src/main.c ****   */
+ 251:Core/Src/main.c **** void Error_Handler(void)
+ 252:Core/Src/main.c **** {
+ 369              		.loc 1 252 1 is_stmt 1 view -0
+ 370              		.cfi_startproc
+ 371              		@ Volatile: function does not return.
+ 372              		@ args = 0, pretend = 0, frame = 0
+ 373              		@ frame_needed = 0, uses_anonymous_args = 0
+ 374              		@ link register save eliminated.
+ 253:Core/Src/main.c ****   /* USER CODE BEGIN Error_Handler_Debug */
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 12
+
+
+ 254:Core/Src/main.c ****   /* User can add his own implementation to report the HAL error return state */
+ 255:Core/Src/main.c ****   __disable_irq();
+ 375              		.loc 1 255 3 view .LVU93
+ 376              	.LBB5:
+ 377              	.LBI5:
+ 378              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif                                           
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 13
+
+
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 14
+
+
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 379              		.loc 2 140 27 view .LVU94
+ 380              	.LBB6:
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 381              		.loc 2 142 3 view .LVU95
+ 382              		.syntax unified
+ 383              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 384 0000 72B6     		cpsid i
+ 385              	@ 0 "" 2
+ 386              		.thumb
+ 387              		.syntax unified
+ 388              	.L29:
+ 389              	.LBE6:
+ 390              	.LBE5:
+ 256:Core/Src/main.c ****   while (1)
+ 391              		.loc 1 256 3 discriminator 1 view .LVU96
+ 257:Core/Src/main.c ****   {
+ 258:Core/Src/main.c ****   }
+ 392              		.loc 1 258 3 discriminator 1 view .LVU97
+ 256:Core/Src/main.c ****   while (1)
+ 393              		.loc 1 256 9 discriminator 1 view .LVU98
+ 394 0002 FEE7     		b	.L29
+ 395              		.cfi_endproc
+ 396              	.LFE71:
+ 398              		.section	.text.SystemClock_Config,"ax",%progbits
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 15
+
+
+ 399              		.align	1
+ 400              		.global	SystemClock_Config
+ 401              		.syntax unified
+ 402              		.thumb
+ 403              		.thumb_func
+ 405              	SystemClock_Config:
+ 406              	.LFB70:
+ 202:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 407              		.loc 1 202 1 view -0
+ 408              		.cfi_startproc
+ 409              		@ args = 0, pretend = 0, frame = 88
+ 410              		@ frame_needed = 0, uses_anonymous_args = 0
+ 411 0000 00B5     		push	{lr}
+ 412              	.LCFI3:
+ 413              		.cfi_def_cfa_offset 4
+ 414              		.cfi_offset 14, -4
+ 415 0002 97B0     		sub	sp, sp, #92
+ 416              	.LCFI4:
+ 417              		.cfi_def_cfa_offset 96
+ 203:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 418              		.loc 1 203 3 view .LVU100
+ 203:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 419              		.loc 1 203 22 is_stmt 0 view .LVU101
+ 420 0004 2822     		movs	r2, #40
+ 421 0006 0021     		movs	r1, #0
+ 422 0008 0CA8     		add	r0, sp, #48
+ 423 000a FFF7FEFF 		bl	memset
+ 424              	.LVL38:
+ 204:Core/Src/main.c ****   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+ 425              		.loc 1 204 3 is_stmt 1 view .LVU102
+ 204:Core/Src/main.c ****   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+ 426              		.loc 1 204 22 is_stmt 0 view .LVU103
+ 427 000e 0023     		movs	r3, #0
+ 428 0010 0793     		str	r3, [sp, #28]
+ 429 0012 0893     		str	r3, [sp, #32]
+ 430 0014 0993     		str	r3, [sp, #36]
+ 431 0016 0A93     		str	r3, [sp, #40]
+ 432 0018 0B93     		str	r3, [sp, #44]
+ 205:Core/Src/main.c **** 
+ 433              		.loc 1 205 3 is_stmt 1 view .LVU104
+ 205:Core/Src/main.c **** 
+ 434              		.loc 1 205 28 is_stmt 0 view .LVU105
+ 435 001a 0193     		str	r3, [sp, #4]
+ 436 001c 0293     		str	r3, [sp, #8]
+ 437 001e 0393     		str	r3, [sp, #12]
+ 438 0020 0493     		str	r3, [sp, #16]
+ 439 0022 0593     		str	r3, [sp, #20]
+ 440 0024 0693     		str	r3, [sp, #24]
+ 210:Core/Src/main.c ****   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ 441              		.loc 1 210 3 is_stmt 1 view .LVU106
+ 210:Core/Src/main.c ****   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ 442              		.loc 1 210 36 is_stmt 0 view .LVU107
+ 443 0026 0122     		movs	r2, #1
+ 444 0028 0C92     		str	r2, [sp, #48]
+ 211:Core/Src/main.c ****   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+ 445              		.loc 1 211 3 is_stmt 1 view .LVU108
+ 211:Core/Src/main.c ****   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 16
+
+
+ 446              		.loc 1 211 30 is_stmt 0 view .LVU109
+ 447 002a 4FF48033 		mov	r3, #65536
+ 448 002e 0D93     		str	r3, [sp, #52]
+ 212:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 449              		.loc 1 212 3 is_stmt 1 view .LVU110
+ 213:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 450              		.loc 1 213 3 view .LVU111
+ 213:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 451              		.loc 1 213 30 is_stmt 0 view .LVU112
+ 452 0030 1092     		str	r2, [sp, #64]
+ 214:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 453              		.loc 1 214 3 is_stmt 1 view .LVU113
+ 214:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 454              		.loc 1 214 34 is_stmt 0 view .LVU114
+ 455 0032 0222     		movs	r2, #2
+ 456 0034 1392     		str	r2, [sp, #76]
+ 215:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+ 457              		.loc 1 215 3 is_stmt 1 view .LVU115
+ 215:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+ 458              		.loc 1 215 35 is_stmt 0 view .LVU116
+ 459 0036 1493     		str	r3, [sp, #80]
+ 216:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 460              		.loc 1 216 3 is_stmt 1 view .LVU117
+ 216:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 461              		.loc 1 216 32 is_stmt 0 view .LVU118
+ 462 0038 4FF4E013 		mov	r3, #1835008
+ 463 003c 1593     		str	r3, [sp, #84]
+ 217:Core/Src/main.c ****   {
+ 464              		.loc 1 217 3 is_stmt 1 view .LVU119
+ 217:Core/Src/main.c ****   {
+ 465              		.loc 1 217 7 is_stmt 0 view .LVU120
+ 466 003e 0CA8     		add	r0, sp, #48
+ 467 0040 FFF7FEFF 		bl	HAL_RCC_OscConfig
+ 468              	.LVL39:
+ 217:Core/Src/main.c ****   {
+ 469              		.loc 1 217 6 view .LVU121
+ 470 0044 C8B9     		cbnz	r0, .L35
+ 224:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 471              		.loc 1 224 3 is_stmt 1 view .LVU122
+ 224:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 472              		.loc 1 224 31 is_stmt 0 view .LVU123
+ 473 0046 0F23     		movs	r3, #15
+ 474 0048 0793     		str	r3, [sp, #28]
+ 226:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 475              		.loc 1 226 3 is_stmt 1 view .LVU124
+ 226:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 476              		.loc 1 226 34 is_stmt 0 view .LVU125
+ 477 004a 0221     		movs	r1, #2
+ 478 004c 0891     		str	r1, [sp, #32]
+ 227:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 479              		.loc 1 227 3 is_stmt 1 view .LVU126
+ 227:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 480              		.loc 1 227 35 is_stmt 0 view .LVU127
+ 481 004e 0023     		movs	r3, #0
+ 482 0050 0993     		str	r3, [sp, #36]
+ 228:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 483              		.loc 1 228 3 is_stmt 1 view .LVU128
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 17
+
+
+ 228:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 484              		.loc 1 228 36 is_stmt 0 view .LVU129
+ 485 0052 4FF48062 		mov	r2, #1024
+ 486 0056 0A92     		str	r2, [sp, #40]
+ 229:Core/Src/main.c **** 
+ 487              		.loc 1 229 3 is_stmt 1 view .LVU130
+ 229:Core/Src/main.c **** 
+ 488              		.loc 1 229 36 is_stmt 0 view .LVU131
+ 489 0058 0B93     		str	r3, [sp, #44]
+ 231:Core/Src/main.c ****   {
+ 490              		.loc 1 231 3 is_stmt 1 view .LVU132
+ 231:Core/Src/main.c ****   {
+ 491              		.loc 1 231 7 is_stmt 0 view .LVU133
+ 492 005a 07A8     		add	r0, sp, #28
+ 493 005c FFF7FEFF 		bl	HAL_RCC_ClockConfig
+ 494              	.LVL40:
+ 231:Core/Src/main.c ****   {
+ 495              		.loc 1 231 6 view .LVU134
+ 496 0060 68B9     		cbnz	r0, .L36
+ 235:Core/Src/main.c ****   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+ 497              		.loc 1 235 3 is_stmt 1 view .LVU135
+ 235:Core/Src/main.c ****   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+ 498              		.loc 1 235 38 is_stmt 0 view .LVU136
+ 499 0062 0223     		movs	r3, #2
+ 500 0064 0193     		str	r3, [sp, #4]
+ 236:Core/Src/main.c ****   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+ 501              		.loc 1 236 3 is_stmt 1 view .LVU137
+ 236:Core/Src/main.c ****   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+ 502              		.loc 1 236 35 is_stmt 0 view .LVU138
+ 503 0066 4FF40043 		mov	r3, #32768
+ 504 006a 0393     		str	r3, [sp, #12]
+ 237:Core/Src/main.c ****   {
+ 505              		.loc 1 237 3 is_stmt 1 view .LVU139
+ 237:Core/Src/main.c ****   {
+ 506              		.loc 1 237 7 is_stmt 0 view .LVU140
+ 507 006c 01A8     		add	r0, sp, #4
+ 508 006e FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 509              	.LVL41:
+ 237:Core/Src/main.c ****   {
+ 510              		.loc 1 237 6 view .LVU141
+ 511 0072 30B9     		cbnz	r0, .L37
+ 241:Core/Src/main.c **** 
+ 512              		.loc 1 241 1 view .LVU142
+ 513 0074 17B0     		add	sp, sp, #92
+ 514              	.LCFI5:
+ 515              		.cfi_remember_state
+ 516              		.cfi_def_cfa_offset 4
+ 517              		@ sp needed
+ 518 0076 5DF804FB 		ldr	pc, [sp], #4
+ 519              	.L35:
+ 520              	.LCFI6:
+ 521              		.cfi_restore_state
+ 219:Core/Src/main.c ****   }
+ 522              		.loc 1 219 5 is_stmt 1 view .LVU143
+ 523 007a FFF7FEFF 		bl	Error_Handler
+ 524              	.LVL42:
+ 525              	.L36:
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 18
+
+
+ 233:Core/Src/main.c ****   }
+ 526              		.loc 1 233 5 view .LVU144
+ 527 007e FFF7FEFF 		bl	Error_Handler
+ 528              	.LVL43:
+ 529              	.L37:
+ 239:Core/Src/main.c ****   }
+ 530              		.loc 1 239 5 view .LVU145
+ 531 0082 FFF7FEFF 		bl	Error_Handler
+ 532              	.LVL44:
+ 533              		.cfi_endproc
+ 534              	.LFE70:
+ 536              		.section	.text.main,"ax",%progbits
+ 537              		.align	1
+ 538              		.global	main
+ 539              		.syntax unified
+ 540              		.thumb
+ 541              		.thumb_func
+ 543              	main:
+ 544              	.LFB69:
+ 150:Core/Src/main.c **** 
+ 545              		.loc 1 150 1 view -0
+ 546              		.cfi_startproc
+ 547              		@ Volatile: function does not return.
+ 548              		@ args = 0, pretend = 0, frame = 0
+ 549              		@ frame_needed = 0, uses_anonymous_args = 0
+ 550 0000 08B5     		push	{r3, lr}
+ 551              	.LCFI7:
+ 552              		.cfi_def_cfa_offset 8
+ 553              		.cfi_offset 3, -8
+ 554              		.cfi_offset 14, -4
+ 153:Core/Src/main.c ****     HAL_TIM_Base_Start_IT(&htim3);
+ 555              		.loc 1 153 1 view .LVU147
+ 556 0002 1048     		ldr	r0, .L41
+ 557 0004 FFF7FEFF 		bl	PID_Init
+ 558              	.LVL45:
+ 154:Core/Src/main.c ****     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+ 559              		.loc 1 154 5 view .LVU148
+ 560 0008 0F48     		ldr	r0, .L41+4
+ 561 000a FFF7FEFF 		bl	HAL_TIM_Base_Start_IT
+ 562              	.LVL46:
+ 155:Core/Src/main.c ****     HAL_ADC_Start_IT(&hadc1);
+ 563              		.loc 1 155 5 view .LVU149
+ 564 000e 0021     		movs	r1, #0
+ 565 0010 0E48     		ldr	r0, .L41+8
+ 566 0012 FFF7FEFF 		bl	HAL_TIM_PWM_Start
+ 567              	.LVL47:
+ 156:Core/Src/main.c ****   /* USER CODE END 1 */
+ 568              		.loc 1 156 5 view .LVU150
+ 569 0016 0E48     		ldr	r0, .L41+12
+ 570 0018 FFF7FEFF 		bl	HAL_ADC_Start_IT
+ 571              	.LVL48:
+ 162:Core/Src/main.c **** 
+ 572              		.loc 1 162 3 view .LVU151
+ 573 001c FFF7FEFF 		bl	HAL_Init
+ 574              	.LVL49:
+ 169:Core/Src/main.c **** 
+ 575              		.loc 1 169 3 view .LVU152
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 19
+
+
+ 576 0020 FFF7FEFF 		bl	SystemClock_Config
+ 577              	.LVL50:
+ 176:Core/Src/main.c ****   MX_CAN_Init();
+ 578              		.loc 1 176 3 view .LVU153
+ 579 0024 FFF7FEFF 		bl	MX_GPIO_Init
+ 580              	.LVL51:
+ 177:Core/Src/main.c ****   MX_ADC1_Init();
+ 581              		.loc 1 177 3 view .LVU154
+ 582 0028 FFF7FEFF 		bl	MX_CAN_Init
+ 583              	.LVL52:
+ 178:Core/Src/main.c ****   MX_TIM1_Init();
+ 584              		.loc 1 178 3 view .LVU155
+ 585 002c FFF7FEFF 		bl	MX_ADC1_Init
+ 586              	.LVL53:
+ 179:Core/Src/main.c ****   MX_TIM3_Init();
+ 587              		.loc 1 179 3 view .LVU156
+ 588 0030 FFF7FEFF 		bl	MX_TIM1_Init
+ 589              	.LVL54:
+ 180:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 590              		.loc 1 180 3 view .LVU157
+ 591 0034 FFF7FEFF 		bl	MX_TIM3_Init
+ 592              	.LVL55:
+ 593              	.L39:
+ 187:Core/Src/main.c ****   {
+ 594              		.loc 1 187 3 discriminator 1 view .LVU158
+ 189:Core/Src/main.c ****     /* USER CODE END WHILE */
+ 595              		.loc 1 189 5 discriminator 1 view .LVU159
+ 596 0038 4FF47A70 		mov	r0, #1000
+ 597 003c FFF7FEFF 		bl	HAL_Delay
+ 598              	.LVL56:
+ 187:Core/Src/main.c ****   {
+ 599              		.loc 1 187 9 discriminator 1 view .LVU160
+ 600 0040 FAE7     		b	.L39
+ 601              	.L42:
+ 602 0042 00BF     		.align	2
+ 603              	.L41:
+ 604 0044 00000000 		.word	pid
+ 605 0048 00000000 		.word	htim3
+ 606 004c 00000000 		.word	htim1
+ 607 0050 00000000 		.word	hadc1
+ 608              		.cfi_endproc
+ 609              	.LFE69:
+ 611              		.global	measured_value
+ 612              		.section	.bss.measured_value,"aw",%nobits
+ 613              		.align	2
+ 616              	measured_value:
+ 617 0000 00000000 		.space	4
+ 618              		.global	adc_value
+ 619              		.section	.bss.adc_value,"aw",%nobits
+ 620              		.align	1
+ 623              	adc_value:
+ 624 0000 0000     		.space	2
+ 625              		.global	pid
+ 626              		.section	.bss.pid,"aw",%nobits
+ 627              		.align	2
+ 630              	pid:
+ 631 0000 00000000 		.space	40
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 20
+
+
+ 631      00000000 
+ 631      00000000 
+ 631      00000000 
+ 631      00000000 
+ 632              		.text
+ 633              	.Letext0:
+ 634              		.file 3 "e:\\msys2\\mingw64\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 635              		.file 4 "e:\\msys2\\mingw64\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 636              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h"
+ 637              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h"
+ 638              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 639              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h"
+ 640              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h"
+ 641              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 642              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h"
+ 643              		.file 12 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h"
+ 644              		.file 13 "Core/Inc/adc.h"
+ 645              		.file 14 "Core/Inc/tim.h"
+ 646              		.file 15 "Core/Inc/can.h"
+ 647              		.file 16 "Core/Inc/gpio.h"
+ 648              		.file 17 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 649              		.file 18 "<built-in>"
+ARM GAS  C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s 			page 21
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:19     .text.PID_Init:00000000 $t
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:25     .text.PID_Init:00000000 PID_Init
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:74     .text.PID_Init:00000024 $d
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:88     .text.PID_Calculate:00000000 $t
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:94     .text.PID_Calculate:00000000 PID_Calculate
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:240    .text.HAL_TIM_PeriodElapsedCallback:00000000 $t
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:246    .text.HAL_TIM_PeriodElapsedCallback:00000000 HAL_TIM_PeriodElapsedCallback
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:302    .text.HAL_TIM_PeriodElapsedCallback:00000034 $d
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:623    .bss.adc_value:00000000 adc_value
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:616    .bss.measured_value:00000000 measured_value
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:630    .bss.pid:00000000 pid
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:311    .text.HAL_ADC_ConvCpltCallback:00000000 $t
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:317    .text.HAL_ADC_ConvCpltCallback:00000000 HAL_ADC_ConvCpltCallback
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:355    .text.HAL_ADC_ConvCpltCallback:00000018 $d
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:361    .text.Error_Handler:00000000 $t
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:367    .text.Error_Handler:00000000 Error_Handler
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:399    .text.SystemClock_Config:00000000 $t
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:405    .text.SystemClock_Config:00000000 SystemClock_Config
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:537    .text.main:00000000 $t
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:543    .text.main:00000000 main
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:604    .text.main:00000044 $d
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:613    .bss.measured_value:00000000 $d
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:620    .bss.adc_value:00000000 $d
+C:\Users\Lenovo\AppData\Local\Temp\ccxyr4jC.s:627    .bss.pid:00000000 $d
+
+UNDEFINED SYMBOLS
+__aeabi_fsub
+__aeabi_fmul
+__aeabi_fadd
+__aeabi_fdiv
+__aeabi_fcmpgt
+__aeabi_fcmplt
+__aeabi_ui2f
+__aeabi_f2uiz
+htim3
+HAL_ADC_GetValue
+memset
+HAL_RCC_OscConfig
+HAL_RCC_ClockConfig
+HAL_RCCEx_PeriphCLKConfig
+HAL_TIM_Base_Start_IT
+HAL_TIM_PWM_Start
+HAL_ADC_Start_IT
+HAL_Init
+MX_GPIO_Init
+MX_CAN_Init
+MX_ADC1_Init
+MX_TIM1_Init
+MX_TIM3_Init
+HAL_Delay
+htim1
+hadc1

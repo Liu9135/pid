@@ -55,8 +55,17 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-float mode;
-float type =2;
+float disturbance=0;
+float a;
+float Velocity;
+float Angle;
+float Current;
+float V;
+float A1;
+float A2;
+float t  = 0;
+float mode=3;
+float type =3;
 typedef struct PID
 {   
 	  float i;
@@ -75,10 +84,32 @@ pid_t pida;
 void pidv_Init(pid_t *pid){
 	pid -> i=0;
 	pid -> d=0;
+	if(mode==1&&type==1){
 	pid -> Kp=3.00;
 	pid -> Ki=2.00;
-	pid -> Kd=1.0;
+	pid -> Kd=0.00;
 	pid -> setpoint=10.00;
+	}
+	if(mode==1&&type==3){
+	pid -> Kp=0.65;
+	pid -> Ki=0.00;
+	pid -> Kd=0.00;
+	}
+	if(mode==2&&type==1){
+	pid -> Kp=8.00;
+	pid -> Ki=5.00;
+	pid -> Kd=0.00;
+	}
+	if(mode==2&&type==3){
+	pid -> Kp=8.00;
+	pid -> Ki=5.00;
+	pid -> Kd=0.00;
+	}
+	if(mode==3){
+	pid -> Kp=3.00;
+	pid -> Ki=0.00;
+	pid -> Kd=0.00;
+	}
 	pid -> err=0;
 	pid -> last_err=pid -> setpoint;	
 	pid -> last_last_err=0.00;
@@ -87,10 +118,33 @@ void pidv_Init(pid_t *pid){
 void pida_Init(pid_t *pid){
 	pid -> i=0;
 	pid -> d=0;
+	if(mode==1&&type==2){
 	pid -> Kp=3.00;
-	pid -> Ki=2.00;
-	pid -> Kd=1.00;
-	pid -> setpoint=10;
+	pid -> Ki=0.20;
+	pid -> Kd=2.00;
+	pid -> setpoint=2*3.1415926;
+	}
+	if(mode==1&&type==3){
+	pid -> Kp=5.00;
+	pid -> Ki=0.30;
+	pid -> Kd=1.95;
+	pid -> setpoint=2*3.1415926;
+	}
+	if(mode==2&&type==2){
+	pid -> Kp=3.00;
+	pid -> Ki=0.00;
+	pid -> Kd=0.00;
+	}
+	if(mode==2&&type==3){
+	pid -> Kp=5.15;
+	pid -> Ki=0.00;
+	pid -> Kd=0.00;
+	}
+	if(mode==3){
+	pid -> Kp=3.00;
+	pid -> Ki=0.20;
+	pid -> Kd=2.00;
+	}
 	pid -> err=0;
 	pid -> last_err=pid -> setpoint;	
 	pid -> last_last_err=0.00;
@@ -103,6 +157,12 @@ float PID_VCalc(float *Measure,float dt){
 		pidv.d=(pidv.err-pidv.last_err)/dt;
 		pidv.last_last_err=pidv.last_err;
 		pidv.last_err=pidv.err;
+	  if(pidv.i>MAX_I){
+		pidv.i=MAX_I;
+		}
+		if(pidv.i<-1*MAX_I){
+		pidv.i=-1*MAX_I;
+		}
 		pidv.output=pidv.Kp*pidv.err+pidv.Ki*pidv.i+pidv.Kd*pidv.d;
 	return pidv.output;
 }
@@ -112,18 +172,23 @@ float PID_ACalc(float *Measure,float dt){
 		pida.d=(pida.err-pida.last_err)/dt;
 		pida.last_last_err=pida.last_err;
 		pida.last_err=pida.err;
+	if(pida.i>MAX_I){
+		pida.i=MAX_I;
+		}
+		if(pida.i<-1*MAX_I){
+		pida.i=-1*MAX_I;
+		}
 		pida.output=pida.Kp*pida.err+pida.Ki*pida.i+pida.Kd*pida.d;
+		if(type==2){
 	return pida.output;
+		}
+		if(type==3){
+			pidv.setpoint=pida.output;
+		pida.output=PID_VCalc(&Motor.MeasureVelocity,dt);
+			return pida.output;
+		}
 }
-//void Motor_Update(motorObject_t *motor, float dt) {
-//    motor->dI = (motor->U - motor->motorParam.R * motor->I - motor->motorParam.Ke * motor->Velocity) / motor->motorParam.L;
-//    motor->I += motor->dI * dt;
-//   motor->dV = (motor->motorParam.Kt * motor->I - motor->motorParam.b * motor->Velocity - motor->motorParam.constFriction) / motor->motorParam.J;
-//    motor->Velocity += motor->dV * dt; 
-//	motor->Angle += motor->Velocity * dt; 
-//}
 uint32_t DWT_CNT;
-float t  = 0;
 float dt =0 ;
 float input=0;
 /* USER CODE END 0 */
@@ -169,17 +234,33 @@ pida_Init(&pida);
   while (1)
   { dt=DWT_GetDeltaT(&DWT_CNT);
 		t+=dt;
-		Motor.I = Get_Motor_Current(&Motor);
-    Motor.Velocity = Get_Motor_Velocity(&Motor);
-    Motor.Angle = Get_Motor_Angle(&Motor);
+		Current = Get_Motor_Current(&Motor);
+    Velocity = Get_Motor_Velocity(&Motor);
+    Angle = Get_Motor_Angle(&Motor);
 		if(type==1){
      input = PID_VCalc(&Motor.MeasureVelocity,dt);
 		}
-		if(type==2){
-			input = PID_ACalc(&Motor.MeasureAngle,dt);
+		if(type==2||type==3){
+		 input = PID_ACalc(&Motor.MeasureAngle,dt);
 		}
-		 Motor_Simulation(&Motor,input, dt);
-		//Motor_Update(&Motor, dt);
+		if(mode==2&&type!=3){
+		pidv.setpoint=t;
+		pida.setpoint=2*3.14159*sin(5*t);
+		}
+		if(mode==2&&type==3){
+		pida.setpoint=2*3.14159*sin(5*t);
+		}
+		if(mode==3&&type!=3){
+    pidv.setpoint=10*sin(15*t);
+		pida.setpoint=0;
+		}
+		if(mode==3&&type==3){
+		pida.setpoint=0;
+		}
+		 Motor_Simulation(&Motor,input+disturbance, dt);
+		V=7.07*sin(15*t-2.58/6);
+		A1=0.707*2*3.14159*sin(5*t-1.5);
+		A2=0.707*2*3.14159*sin(5*t-0.83);
 		HAL_Delay(1);
     /* USER CODE END WHILE */
 

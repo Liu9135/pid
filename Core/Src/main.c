@@ -128,22 +128,11 @@ void pida1_Init(pid_t *pid){
 	pid -> Kd=2.00;
 	pid -> setpoint=2*3.1415926;
 	}
-//	if(mode==1&&type==3){
-//	pid -> Kp=5.00;
-//	pid -> Ki=0.30;
-//	pid -> Kd=1.95;
-//	pid -> setpoint=2*3.1415926;
-//	}
 	if(mode==2){
 	pid -> Kp=3.00;
 	pid -> Ki=0.00;
 	pid -> Kd=0.00;
 	}
-//	if(mode==2&&type==3){
-//	pid -> Kp=5.15;
-//	pid -> Ki=0.00;
-//	pid -> Kd=0.00;
-//	}
 	if(mode==3){
 	pid -> Kp=3.00;
 	pid -> Ki=0.20;
@@ -157,23 +146,12 @@ void pida1_Init(pid_t *pid){
 void pida2_Init(pid_t *pid){
 	pid -> i=0;
 	pid -> d=0;
-//	if(mode==1&&type==2){
-//	pid -> Kp=3.00;
-//	pid -> Ki=0.20;
-//	pid -> Kd=2.00;
-//	pid -> setpoint=2*3.1415926;
-//	}
 	if(mode==1){
 	pid -> Kp=5.00;
 	pid -> Ki=0.30;
 	pid -> Kd=1.95;
 	pid -> setpoint=2*3.1415926;
 	}
-//	if(mode==2&&type==2){
-//	pid -> Kp=3.00;
-//	pid -> Ki=0.00;
-//	pid -> Kd=0.00;
-//	}
 	if(mode==2){
 	pid -> Kp=5.15;
 	pid -> Ki=0.00;

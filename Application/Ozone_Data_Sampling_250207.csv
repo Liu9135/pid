@@ -1,0 +1,4 @@
+Level,Expression,Type,Value,Min,Max,Average,# Changes,Min. Change,Max. Change
+0,Aref2,float,3.79510999,-4.44216442,4.44218206,0.192467093,562,-3.18666887,0.222087026
+0,Motor.Angle,float,6.27342653,0,6.27342653,5.17832327,562,0,0.0578241944
+0,pida.setpoint,float,6.28318501,0,6.28318501,6.27202463,1,0,6.28318501
